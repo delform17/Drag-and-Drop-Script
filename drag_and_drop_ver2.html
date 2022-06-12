@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Drag and Drop Script</title>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.sound.min.js"></script>
+  <link rel="stylesheet" href="drag_and_drop_ver2_styles.css" />
+  
+  
+  
+</head>
+
+<body>
+  
+  <div id ="dropzone">
+    <header>Drag your file here.</header>
+  
+  <p id="info"></p>
+  
+  <!-- Load file by button and show description -->
+  <input type="file" id="readFile" multiple size="70" hidden="hidden">
+  <button type="button" id="pretty-btn" onclick="readSelectedFile()">Choose the file</button>
+  <span id="label">No file are choosen</span>
+
+  <div id="image"></div>
+  <p id="txt"></p>
+  
+  <!-- Area where files are display -->
+  
+  <select id="options" onchange="chooseTypeOfFile()">
+	<option value="choose">wybierz typ pliku</option>
+	<option value="jpg">jpg</option>
+	<option value="doc">doc</option>
+	<option value="pdf">pdf</option>
+</select>
+
+<output id="objectsArea"></output>
+</div>
+  
+<script>
+  
+	var dropArea;
+	
+	function setup()
+	{
+		//Pobieranie elementu z id dropzone
+		dropArea = select('#dropzone');
+		dropArea.dragOver(lights);
+		dropArea.dragLeave(unlights);
+		dropArea.drop(haveFile, unlights );
+	}
+		//Wyswietlanie data info oraz samego obrazu
+		function haveFile(file)
+		{
+			var picture = createImg(file.data);
+			picture.size(150,150);
+			
+			
+			/*
+			//Utworzenie paragrafu
+			var paragraph = document.createElement("P");
+			paragraph.innerHTML = file.name;
+			var paragraph2 = document.createElement("P");
+			paragraph2.innerHTML = file.size;
+			//Dodanie paragrafu do odpowiedniego elementu
+			document.getElementById("info").appendChild(paragraph);
+			document.getElementById("info").appendChild(paragraph2);*/
+			
+			//Utworzenie paragrafow zawierajace opisy plikow
+			var newParag = document.createElement("p");
+			var secondparag = document.createElement("p");
+			var name = document.createTextNode(file.name);
+			var size = document.createTextNode(file.size);
+			
+			newParag.appendChild(name);
+			secondparag.appendChild(size);
+			document.body.appendChild(newParag);
+			document.body.appendChild(secondparag);
+			
+		}
+		
+		//Style elementu na ktory przenosi sie plik
+		function lights()
+		{
+			dropArea.style('background-color','#c5c5c5');
+		}
+		
+		//Style elementu jesli plik jest w obrebie pola
+		function unlights()
+		{
+			dropArea.style('background-color','#fff');
+		}
+		
+		function readSelectedFile()
+		{
+			
+			var read = document.getElementById("pretty-btn");
+			read.addEventListener("click", function()
+			{
+				readFile.click();
+			});
+
+			var description = "";
+			
+			//Check if in read object are some files 
+			if('files' in read)
+			{
+				if(read.files.length == 0)
+				{
+					description = "Select more files to load";
+				}else{
+					for(var a = 0 ; a < read.files.length; a++)
+					{
+						//Show loaded File information
+						description += "<br><strong>" + (a+1) + ". file</strong><br>";
+						
+						var loadedFile = read.files[a];
+						
+						if('name' in loadedFile)
+						{
+							description += "name: " + loadedFile.name + "<br>";
+						}
+						
+						if('size' in loadedFile)
+						{
+							description += "size: " + loadedFile.size + "bytes <br>";
+						}
+					}
+				}
+			}
+			else{
+				if(read.value == "")
+				{
+					description += "Please seleced some file";
+				}else{
+					description += "seleced files are not support by your browser";
+				}
+			}
+			document.getElementById("txt").innerHTML = description;
+		}
+		
+	////////////Filtrowanie wynikow wedle typu pliku\\\\\\\\\\\\\\\\\\
+	
+	function chooseTypeOfFile()
+	{
+		var type = document.getElementById('options');
+		//Wybranie odpowiedniej wartosci z kontrolki select
+		var selectedOption = type.options[type.selectedIndex].value;
+		
+		if(selectedOption === 'jpg')
+		{
+			//Create object and get element
+			var actualType = document.getElementById('readFile');
+			
+			var files = actualType.files;
+			//console.log(files[0].type);
+			
+			for(var i = 0; i < actualType.files.length; i++)
+			{
+				//Check type of file
+				if(files[i].type === 'image/jpeg')
+				{
+				
+					//console.log(files[0]);
+					var preview = document.querySelector('#image');
+					//var file = document.querySelector('input[type=file]').files;
+					
+					//Display only images files
+					
+					//Get list of loaded files
+					var list = document.getElementById('readFile');
+					var listOfFiles = list.files;
+					
+					for(var i=0, f;f = listOfFiles[i]; i++)
+					{
+						//Check items and search only images
+						if(!f.type.match('image.*'))
+						{
+							continue;
+						}
+						
+						var read = new FileReader();
+						
+						//Load the function 
+						read.onload = (function(fi)
+						{
+							return function(a)
+							{
+								//Create element
+								var image = document.createElement('span');
+								//Display content on screen 
+								image.innerHTML = ['<img class="miniImage" src="',a.target.result , '"title"',escape(fi.name), '" />'].join('');
+								document.getElementById('objectsArea').insertBefore(image, null);
+							}
+							
+						})(f);
+						
+						read.readAsDataURL(f);
+					}
+					
+					
+					
+					
+					
+				}			
+			}
+		}
+	}
+	
+	
+</script>
+  
+</body>
+
+</html>
